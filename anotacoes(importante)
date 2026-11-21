@@ -1,0 +1,21 @@
+## Anotações referentes à organização desse projeto ##
+
+A estrutura desenvolvida foi:
+
+grupo15_ielts/
+│
+├── app.R
+│
+├── dados/
+│   ├── banco1.csv
+│   └── banco2.csv
+│   └── banco3.csv
+│   └── banco4.csv
+│   └── banco5.csv
+│
+├── codigos/
+│   ├── analise.R
+│   ├── visualizacao.R
+│
+└── www/
+    ├── style.css
