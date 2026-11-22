@@ -24,3 +24,82 @@ performance_by_nationality <- readr::read_csv('https://raw.githubusercontent.com
 ## Analise exploratória inicial:
 
 glimpse(demo_by_first_language)       #Só é necessário verificar cada banco para então saber quais os nomes das variáveis
+
+
+
+
+
+##adiciona a variavel continent
+#demo_by_nationality
+
+demo_by_nationality <- demo_by_nationality %>%
+  mutate(continent = case_when(
+    nationality %in% c(
+      "Azerbaijan", "Bangladesh", "Cambodia", "China",
+      "Hong Kong", "Hong Kong, SAR of China", "India",
+      "Indonesia", "Iran, Islamic Republic of", "Iran",
+      "Japan", "Jordan", "Kazakhstan", "Korea, Republic of",
+      "Kuwait", "Malaysia", "Mongolia", "Myanmar", "Nepal",
+      "Oman", "Pakistan", "Philippines", "Saudi Arabia",
+      "Sri Lanka", "Taiwan", "Thailand", "United Arab Emirates",
+      "Uzbekistan", "Vietnam", "Bhutan", "Qatar", "Lebanon"
+    ) ~ "Ásia",
+    
+    nationality %in% c(
+      "France", "Germany", "Italy", "Spain",
+      "Russian Federation", "Turkey", "Ukraine"
+    ) ~ "Europa",
+    
+    nationality %in% c(
+      "Egypt", "Ghana", "Kenya", "Nigeria", "Algeria",
+      "Cameroon", "Mauritius", "South Africa", "Zimbabwe",
+      "Morocco", "Tunisia", "Uganda"
+    ) ~ "África",
+    
+    nationality %in% c(
+      "Colombia", "Argentina", "Brazil", "Chile", "Peru"
+    ) ~ "América do Sul",
+    
+    nationality %in% c(
+      "Mexico", "United States of America"
+    ) ~ "América do Norte",
+    
+    TRUE ~ NA_character_
+  ))
+
+#performance_by_nationality
+
+performance_by_nationality <- performance_by_nationality %>%
+  mutate(continent = case_when(
+    nationality %in% c(
+      "Azerbaijan", "Bangladesh", "Cambodia", "China",
+      "Hong Kong", "Hong Kong, SAR of China", "India",
+      "Indonesia", "Iran, Islamic Republic of", "Iran",
+      "Japan", "Jordan", "Kazakhstan", "Korea, Republic of",
+      "Kuwait", "Malaysia", "Mongolia", "Myanmar", "Nepal",
+      "Oman", "Pakistan", "Philippines", "Saudi Arabia",
+      "Sri Lanka", "Taiwan", "Thailand", "United Arab Emirates",
+      "Uzbekistan", "Vietnam", "Bhutan", "Qatar", "Lebanon"
+    ) ~ "Ásia",
+    
+    nationality %in% c(
+      "France", "Germany", "Italy", "Spain",
+      "Russian Federation", "Turkey", "Ukraine"
+    ) ~ "Europa",
+    
+    nationality %in% c(
+      "Egypt", "Ghana", "Kenya", "Nigeria", "Algeria",
+      "Cameroon", "Mauritius", "South Africa", "Zimbabwe",
+      "Morocco", "Tunisia", "Uganda"
+    ) ~ "África",
+    
+    nationality %in% c(
+      "Colombia", "Argentina", "Brazil", "Chile", "Peru"
+    ) ~ "América do Sul",
+    
+    nationality %in% c(
+      "Mexico", "United States of America"
+    ) ~ "América do Norte",
+    
+    TRUE ~ NA_character_
+  ))
