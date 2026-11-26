@@ -165,3 +165,10 @@ vetor_nationality <- function(db) {
 vetor_reason <- function(db) {
   return(c(sort((unique(db$reason)))))
 }
+
+
+names(demo_by_first_language)
+names(demo_by_nationality)
+names(demo_by_reasons)
+names(performance_by_first_language)
+names(performance_by_nationality)

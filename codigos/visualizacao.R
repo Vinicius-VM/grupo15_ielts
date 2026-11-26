@@ -15,9 +15,14 @@ grafico_1 <- function(tipo, nacionalidade, ano) {
     )
   
   grafico <- dado %>%
-    ggplot() +
-    aes(x = part, y = score) +
-    geom_col()
+    ggplot(aes(x = part, y = score)) +
+    geom_col(fill = "#287C83", width = 0.7) +
+    labs(
+      x = "Componente do IELTS",
+      y = "Nota",
+      title = paste("Desempenho por nacionalidade:", nacionalidade)
+    ) +
+    theme_minimal()
   
   return(grafico)
 }
@@ -35,9 +40,14 @@ grafico_2 <- function(tipo, linguagem, ano) {
     )
   
   grafico <- dado %>%
-    ggplot() +
-    aes(x = part, y = score) +
-    geom_col()
+    ggplot(aes(x = part, y = score)) +
+    geom_col(fill = "#287C83", width = 0.7) +
+    labs(
+      x = "Componente do IELTS",
+      y = "Nota",
+      title = paste("Desempenho por primeira língua:", linguagem)
+    ) +
+    theme_minimal()
   
   return(grafico)
 }
@@ -55,13 +65,21 @@ grafico_3 <- function(tipo, motivo, ano) {
     )
   
   grafico <- dado %>%
-    ggplot() +
-    aes(x = reason) +
-    geom_bar()
+    ggplot(aes(x = band, y = percent)) +
+    geom_col(fill = "#287C83") +
+    labs(
+      x = "Nota (Band)",
+      y = "Porcentagem",
+      title = "Distribuição das notas por motivo"
+    ) +
+    scale_y_continuous(
+      labels = scales::label_percent()
+    )
   
   return(grafico)
 }
-    
+  
+
 #GRÁFICO 4
   
   grafico_4 <- function(){

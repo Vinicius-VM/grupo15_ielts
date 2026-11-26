@@ -1,1 +1,115 @@
+
 /* Aqui fica o css a ser usado pelo app */
+
+/* Esconde a barra de rolagem da sidebar */
+.sidebar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer */
+}
+
+.sidebar::-webkit-scrollbar {
+  display: none; /* Chrome, Edge e Safari */
+}
+
+
+/* Espaçamento interno da barra lateral */
+.sidebar {
+  padding: 20px 16px;
+}
+
+/* Espaçamento entre os filtros */
+.sidebar .form-group {
+  margin-bottom: 20px;
+}
+
+/* Títulos dos filtros */
+.sidebar label {
+  color: #cbd5df;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+/* Campos de seleção */
+.sidebar .form-select {
+  min-height: 42px;
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+/* Botões da barra lateral */
+.sidebar .btn {
+  border-radius: 8px;
+  padding: 9px 14px;
+  font-weight: 600;
+}
+
+
+/* Cabeçalho principal */
+.navbar {
+  background-color: #10151b !important;
+  border-bottom: 1px solid #293640;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+/* Nome do projeto no cabeçalho */
+.navbar-brand {
+  color: #e8edf2 !important;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* Links do cabeçalho */
+.navbar .nav-link {
+  color: #aab7c4 !important;
+  transition: color 0.2s ease;
+}
+
+.navbar .nav-link:hover {
+  color: #55b8b0 !important;
+}
+
+
+
+
+/* Personalização global da paginação DT */
+
+/* Variáveis de cores do Bootstrap */
+:root {
+  --bs-primary: #287c83;
+  --bs-pagination-active-bg: #287c83;
+  --bs-pagination-active-border-color: #287c83;
+}
+
+/* Botões da paginação */
+.dataTables_wrapper .pagination .page-link,
+.dt-container .pagination .page-link,
+.dataTables_wrapper .paginate_button,
+.dt-container .dt-paging-button {
+  background-color: #202832 !important;
+  background-image: none !important;
+  color: #cbd5df !important;
+  border-color: #3b4855 !important;
+  box-shadow: none !important;
+}
+
+/* Página selecionada */
+.dataTables_wrapper .pagination .active .page-link,
+.dt-container .pagination .active .page-link,
+.dataTables_wrapper .paginate_button.current,
+.dt-container .dt-paging-button.current {
+  background-color: #287c83 !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  border-color: #287c83 !important;
+}
+
+/* Efeito ao passar o mouse */
+.dataTables_wrapper .pagination .page-link:hover,
+.dt-container .pagination .page-link:hover,
+.dataTables_wrapper .paginate_button:hover,
+.dt-container .dt-paging-button:hover {
+  background-color: #344653 !important;
+  color: #ffffff !important;
+  border-color: #455968 !important;
+}

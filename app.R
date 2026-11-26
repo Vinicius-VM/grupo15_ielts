@@ -4,7 +4,7 @@ library(shiny)
 library(bslib)
 library(ggplot2)
 library(dplyr)
-
+library(DT)
 
 ##############
 
@@ -46,14 +46,11 @@ performance_by_nationality <- dados$performance_by_nationality
 
 #feita essa variável para consultar na hora de editar o tema (serve junto com o Css)
 
-tema <- bs_theme(
+tema <- bs_theme(       #Aqui, basta consultar o site do bootswatch e pegar o que preferir
   version = 5,
-  bootswatch = "slate",               #Aqui, basta consultar o site do bootswatch e pegar o que preferir
-  primary = "#315B78",
-  secondary = "#6C8495",
-  base_font = font_google("Source Sans 3")
+  bootswatch = "darkly"
+  
 )
-
 
 ##############
 
@@ -62,16 +59,16 @@ tema <- bs_theme(
 ##############
 
 paginas <- c(
-  "pagina_1"  = "01 · Nacionalidade",
-  "pagina_2"  = "02 · Linguagem",
-  "pagina_3"  = "03 · Motivações",
-  "pagina_4"  = "04 · Distribuições",
-  "pagina_5"  = "05 · Comparações",
-  "pagina_6"  = "06 · Desempenho",
-  "pagina_7"  = "07 · Grupos",
-  "pagina_8"  = "08 · Relações",
-  "pagina_9"  = "09 · Tendências",
-  "pagina_10" = "10 · Exploração"
+  "pagina_1"  = "Nacionalidade",
+  "pagina_2"  = "Linguagem",
+  "pagina_3"  = "Motivações",
+  "pagina_4"  = "Tabelas",
+  "pagina_5"  = "Distribuições",
+  "pagina_6"  = "Comparações",
+  "pagina_7"  = "Grupos",
+  "pagina_8"  = "Relações",
+  "pagina_9"  = "Tendências",
+  "pagina_10" = "Exploração"
 )
 
 
@@ -97,6 +94,14 @@ ui <- page_sidebar(
         letter-spacing: 2px;
         opacity: 0.7;
       "
+    )
+  ),
+  
+  tags$head(
+    tags$link(
+      rel = "stylesheet",
+      type = "text/css",
+      href = "style.css"
     )
   ),
   
@@ -146,6 +151,7 @@ ui <- page_sidebar(
   ),
   
   
+
   ##############
   
   # Area principal
@@ -240,9 +246,24 @@ server <- function(input, output, session) {
           choices = vetor_type(demo_by_reasons)
         )
       ),
-      
-      # DEMAIS PÁGINAS
-      "pagina_4" = NULL,
+    #PÁGINA 4 - TABELAS
+            "pagina_4" = tagList(
+        selectInput(
+          "tabela_selecionada",
+          "Escolha a tabela:",
+          choices = c(
+            "Demografia por primeira língua" = "demo_by_first_language",
+            "Demografia por nacionalidade" = "demo_by_nationality",
+            "Demografia por razões" = "demo_by_reasons",
+            "Desempenho por primeira língua" = "performance_by_first_language",
+            "Desempenho por nacionalidade" = "performance_by_nationality"
+          )
+        ),
+        uiOutput("filtros_tabela")
+      ),
+    
+    # DEMAIS PÁGINAS
+    
       "pagina_5" = NULL,
       "pagina_6" = NULL,
       "pagina_7" = NULL,
@@ -253,45 +274,191 @@ server <- function(input, output, session) {
     )
     
   })
+  
+  output$filtros_tabela <- renderUI({
+    
+    req(input$tabela_selecionada)
+    
+    dado <- switch(
+      input$tabela_selecionada,
+      "demo_by_first_language" = demo_by_first_language,
+      "demo_by_nationality" = demo_by_nationality,
+      "demo_by_reasons" = demo_by_reasons,
+      "performance_by_first_language" = performance_by_first_language,
+      "performance_by_nationality" = performance_by_nationality
+    )
+    
+    filtros <- list()
+    
+    if ("type" %in% names(dado)) {
+      filtros <- append(filtros, list(
+        selectInput("filtro_type", "Tipo:",
+                    choices = c("Todos" = "", sort(unique(dado$type))))
+      ))
+    }
+    
+    if ("language" %in% names(dado)) {
+      filtros <- append(filtros, list(
+        selectInput("filtro_language", "Idioma:",
+                    choices = c("Todos" = "", sort(unique(dado$language))))
+      ))
+    }
+    
+    if ("nationality" %in% names(dado)) {
+      filtros <- append(filtros, list(
+        selectInput("filtro_nationality", "Nacionalidade:",
+                    choices = c("Todos" = "", sort(unique(dado$nationality))))
+      ))
+    }
+    
+    if ("reason" %in% names(dado)) {
+      filtros <- append(filtros, list(
+        selectInput("filtro_reason", "Razão:",
+                    choices = c("Todos" = "", sort(unique(dado$reason))))
+      ))
+    }
+    
+    if ("continent" %in% names(dado)) {
+      filtros <- append(filtros, list(
+        selectInput("filtro_continent", "Continente:",
+                    choices = c("Todos" = "", sort(unique(na.omit(dado$continent))))
+        )
+      ))
+    }
+    
+    if ("year" %in% names(dado)) {
+      filtros <- append(filtros, list(
+        selectInput("filtro_year", "Ano:",
+                    choices = c("Todos" = "", sort(unique(dado$year))))
+      ))
+    }
+    
+    do.call(tagList, filtros)
+  })
+  
+  #funçãp para filtrar dados da tabela
+  dados_tabela_filtrados <- reactive({
+    
+    req(input$tabela_selecionada)
+    
+    dado <- switch(
+      input$tabela_selecionada,
+      "demo_by_first_language" = demo_by_first_language,
+      "demo_by_nationality" = demo_by_nationality,
+      "demo_by_reasons" = demo_by_reasons,
+      "performance_by_first_language" = performance_by_first_language,
+      "performance_by_nationality" = performance_by_nationality
+    )
+    
+    if (!is.null(input$filtro_type) && input$filtro_type != "") {
+      dado <- dado %>% filter(type == input$filtro_type)
+    }
+    
+    if (!is.null(input$filtro_language) && input$filtro_language != "") {
+      dado <- dado %>% filter(language == input$filtro_language)
+    }
+    
+    if (!is.null(input$filtro_nationality) && input$filtro_nationality != "") {
+      dado <- dado %>% filter(nationality == input$filtro_nationality)
+    }
+    
+    if (!is.null(input$filtro_reason) && input$filtro_reason != "") {
+      dado <- dado %>% filter(reason == input$filtro_reason)
+    }
+    
+    if (!is.null(input$filtro_continent) && input$filtro_continent != "") {
+      dado <- dado %>% filter(continent == input$filtro_continent)
+    }
+    
+    if (!is.null(input$filtro_year) && input$filtro_year != "") {
+      dado <- dado %>% filter(year == input$filtro_year)
+    }
+    
+    dado
+  })
+  
+  #
+  output$tabela_dados <- DT::renderDT({
+    
+    DT::datatable(
+      dados_tabela_filtrados(),
+      options = list(
+        pageLength = 10,
+        scrollX = TRUE,
+        language = list(
+          search = "Pesquisar:",
+          lengthMenu = "Mostrar _MENU_ registros",
+          info = "Mostrando _START_ até _END_ de _TOTAL_ registros",
+          paginate = list(
+            previous = "Anterior",
+            `next` = "Próximo"
+          )
+        )
+      ),
+      rownames = FALSE
+    )
+    
+  })
+  
   ##############
   
   # conteúdo das páginas
   
   ##############
   
-  output$conteudo_pagina <- renderUI({
-    
-    req(input$pagina_atual)
-    
-    numero <- as.integer(
-      sub("pagina_", "", input$pagina_atual)
-    )
-    
-    titulo <- paginas[[input$pagina_atual]]
-    
-    tagList(
+    output$conteudo_pagina <- renderUI({
       
-      h3(titulo),
+      req(input$pagina_atual)
       
-      p(
-        "IELTS Test Statistics",
-        style = "color: #82909B; font-size: 0.85rem;"
-      ),
-      
-      br(),
-      
-      card(
-        card_header("Visualização"),
-        
-        plotOutput(
-          paste0("grafico_", numero),
-          height = "550px"
-        )
+      numero <- as.integer(
+        sub("pagina_", "", input$pagina_atual)
       )
       
-    )
-    
-  })
+      titulo <- paginas[[input$pagina_atual]]
+      
+      if (input$pagina_atual == "pagina_4") {
+        
+        tagList(
+          h3(titulo),
+          
+          p(
+            "IELTS Test Statistics",
+            style = "color: #82909B; font-size: 0.85rem;"
+          ),
+          
+          br(),
+          
+          card(
+            card_header("Visualização da tabela"),
+            DT::DTOutput("tabela_dados")
+          )
+        )
+        
+      } else {
+        
+        tagList(
+          h3(titulo),
+          
+          p(
+            "IELTS Test Statistics",
+            style = "color: #82909B; font-size: 0.85rem;"
+          ),
+          
+          br(),
+          
+          card(
+            card_header("Visualização"),
+            
+            plotOutput(
+              paste0("grafico_", numero),
+              height = "550px"
+            )
+          )
+        )
+        
+      }
+      
+    })
   
   
   ##############
