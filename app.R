@@ -62,12 +62,12 @@ tema <- bs_theme(
 ##############
 
 paginas <- c(
-  "pagina_1"  = "01 · Desempenho",
-  "pagina_2"  = "02 · Nacionalidade",
+  "pagina_1"  = "01 · Nacionalidade",
+  "pagina_2"  = "02 · Linguagem",
   "pagina_3"  = "03 · Motivações",
-  "pagina_4"  = "04 · Comparações",
-  "pagina_5"  = "05 · Distribuições",
-  "pagina_6"  = "06 · Componentes",
+  "pagina_4"  = "04 · Distribuições",
+  "pagina_5"  = "05 · Comparações",
+  "pagina_6"  = "06 · Desempenho",
   "pagina_7"  = "07 · Grupos",
   "pagina_8"  = "08 · Relações",
   "pagina_9"  = "09 · Tendências",
@@ -132,71 +132,7 @@ ui <- page_sidebar(
     # FILTROS
     h5("FILTROS"),
     
-    # Filtro 1
-    selectInput(
-      "pais",
-      "Nacionalidade",
-      choices = c(
-        "Selecionar..." = "",
-        "Todos os países" = "Todos"
-      ),
-      selected = ""
-    ),
-    
-    # Filtro 2
-    selectInput(
-      "motivacao",
-      "Motivação para realizar o teste",
-      choices = c(
-        "Selecionar..." = "",
-        "Todas as motivações" = "Todas"
-      ),
-      selected = ""
-    ),
-    
-    # Filtro 3
-    selectInput(
-      "componente",
-      "Componente do teste",
-      choices = c(
-        "Selecionar..." = "",
-        "Todos os componentes" = "Todos"
-      ),
-      selected = ""
-    ),
-    
-    # Filtro 4
-    selectInput(
-      "tipo_candidato",
-      "Tipo de candidato",
-      choices = c(
-        "Selecionar..." = "",
-        "Todos os candidatos" = "Todos"
-      ),
-      selected = ""
-    ),
-    
-    # Filtro 5
-    sliderInput(
-      "pontuacao",
-      "Faixa de pontuação",
-      min = 0,
-      max = 9,
-      value = c(0, 9),
-      step = 0.5
-    ),
-    
-    # Filtro 6
-    selectInput(
-      "ano",
-      "Ano de realização",
-      choices = c(
-        "Todos os anos" = "",
-        "Selecionar ano..." = "Selecionar"
-      ),
-      selected = ""
-    ),
-    
+    uiOutput("filtros_pagina"),
     hr(),
     
     # Botão de limpeza
@@ -230,6 +166,93 @@ ui <- page_sidebar(
 server <- function(input, output, session) {
   
   
+  # Conteúdo das paginas
+  output$filtros_pagina <- renderUI({
+    
+    req(input$pagina_atual)
+    
+    switch(
+      input$pagina_atual,
+      
+      # PÁGINA 1 - NACIONALIDADE
+      "pagina_1" = tagList(
+        
+        selectInput(
+          "nationality",
+          "Nacionalidade",
+          choices = vetor_nationality(performance_by_nationality)
+        ),
+        
+        selectInput(
+          "year",
+          "Ano de realização",
+          choices = vetor_year(performance_by_nationality)
+        ),
+      
+      selectInput(
+        "type",
+        "Tipo de candidato",
+        choices = vetor_type(performance_by_nationality)
+        )
+    ),
+      
+      # PÁGINA 2 - LINGUAGEM
+      "pagina_2" = tagList(
+        
+        selectInput(
+          "language",
+          "Primeira língua",
+          choices = vetor_language(performance_by_first_language)
+        ),
+        
+        selectInput(
+          "year",
+          "Ano de realização",
+          choices = vetor_year(performance_by_first_language)
+        ),
+        
+        selectInput(
+          "type",
+          "Tipo de candidato",
+          choices = vetor_type(performance_by_first_language)
+        )
+        
+      ),
+      
+      # PÁGINA 3 - MOTIVAÇÕES
+      "pagina_3" = tagList(
+        
+        selectInput(
+          "reason",
+          "Motivação para realizar o teste",
+          choices = vetor_reason(demo_by_reasons)
+        ),
+        
+        selectInput(
+          "year",
+          "Ano de realização",
+          choices = vetor_year(demo_by_reasons)
+        ),
+        
+        selectInput(
+          "type",
+          "Tipo de candidato",
+          choices = vetor_type(demo_by_reasons)
+        )
+      ),
+      
+      # DEMAIS PÁGINAS
+      "pagina_4" = NULL,
+      "pagina_5" = NULL,
+      "pagina_6" = NULL,
+      "pagina_7" = NULL,
+      "pagina_8" = NULL,
+      "pagina_9" = NULL,
+      "pagina_10" = NULL
+      
+    )
+    
+  })
   ##############
   
   # conteúdo das páginas
@@ -248,7 +271,6 @@ server <- function(input, output, session) {
     
     tagList(
       
-      # Título da página
       h3(titulo),
       
       p(
@@ -258,29 +280,13 @@ server <- function(input, output, session) {
       
       br(),
       
-      # Dois espaços de gráficos
-      layout_columns(
+      card(
+        card_header("Visualização"),
         
-        card(
-          card_header("Visualização 1"),
-          
-          plotOutput(
-            paste0("grafico_", numero, "_1"),
-            height = "380px"
-          )
-        ),
-        
-        card(
-          card_header("Visualização 2"),
-          
-          plotOutput(
-            paste0("grafico_", numero, "_2"),
-            height = "380px"
-          )
-        ),
-        
-        col_widths = c(6, 6),
-        gap = "1rem"
+        plotOutput(
+          paste0("grafico_", numero),
+          height = "550px"
+        )
       )
       
     )
@@ -312,7 +318,7 @@ server <- function(input, output, session) {
     )
     
     updateSelectInput(
-      session, "tipo_candidato",
+      session, "tipo",
       selected = ""
     )
     
@@ -337,46 +343,62 @@ server <- function(input, output, session) {
   
   for (i in 1:10) {
     
-    for (j in 1:2) {
+    local({
       
-      local({
+      pagina <- i
+      
+      id <- paste0("grafico_", pagina)
+      
+      output[[id]] <- renderPlot({
         
-        pagina <- i
-        posicao <- j
-        
-        id <- paste0(
-          "grafico_",
-          pagina,
-          "_",
-          posicao
-        )
-        
-        output[[id]] <- renderPlot({
+        if (pagina == 1) {
+          
+          req(input$nationality, input$type, input$year)
+          
+          grafico_1(
+            tipo = input$type,
+            nacionalidade = input$nationality,
+            ano = input$year
+          )
+          
+        } else if (pagina == 2) {
+          
+          req(input$language, input$type, input$year)
+          
+          grafico_2(
+            tipo = input$type,
+            linguagem = input$language,
+            ano = input$year
+          )
+          
+        } else if (pagina == 3) {
+          
+          req(input$reason, input$type, input$year)
+          
+          grafico_3(
+            tipo = input$type,
+            motivo = input$reason,
+            ano = input$year
+          )
+          
+        } else {
           
           plot.new()
           
-          title(
-            main = paste(
-              "Página",
-              pagina,
-              "- Gráfico",
-              posicao
-            )
-          )
+          title(main = paste("Página", pagina))
           
           text(
-            0.5,
-            0.5,
+            0.5, 0.5,
             "Espaço reservado para visualização",
             col = "gray50",
             cex = 1.1
           )
           
-        })
+        }
         
       })
       
-    }
+    })
     
   }
   

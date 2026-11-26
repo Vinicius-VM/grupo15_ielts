@@ -128,3 +128,40 @@ carregar_dados_ielts <- function() {
   )
 }
 
+
+
+
+#retorna os elementos distintos da variavel Type
+vetor_type <- function(db) {
+  return(c(sort((unique(db$type)))))
+}
+
+#retorna os elementos distintos da variavel Language
+vetor_language <- function(db) {
+  return(c(sort((unique(db$language)))))
+}
+
+#retorna os elementos distintos da variavel Part
+vetor_part <- function(db) {
+  return(c(sort((unique(db$part)))))
+}
+
+#retorna os elementos distintos da variavel Year
+vetor_year <- function(db) {
+  return(c(sort((unique(db$year)))))
+}
+
+#retorna os elementos distintos da variavel Continent
+vetor_continent <- function(db) {
+  return(c(sort((unique(db$continent)))))
+}
+
+#retorna os elementos distintos da variavel Nationality 
+vetor_nationality <- function(db) {
+  return(c(sort((unique(db$nationality)))))
+}
+
+#retorna os elementos distintos da variavel Reason 
+vetor_reason <- function(db) {
+  return(c(sort((unique(db$reason)))))
+}
