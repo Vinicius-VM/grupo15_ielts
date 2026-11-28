@@ -65,7 +65,7 @@ paginas <- c(
   "pagina_4"  = "Tabelas",
   "pagina_5"  = "Distribuições",
   "pagina_6"  = "Comparações",
-  "pagina_7"  = "Grupos",
+  "pagina_7"  = "Continente",
   "pagina_8"  = "Relações",
   "pagina_9"  = "Tendências",
   "pagina_10" = "Exploração"
@@ -262,11 +262,68 @@ server <- function(input, output, session) {
         uiOutput("filtros_tabela")
       ),
     
-    # DEMAIS PÁGINAS
+    #PAGINA 5 - Distribuições medias acumuladas
     
-      "pagina_5" = NULL,
-      "pagina_6" = NULL,
-      "pagina_7" = NULL,
+    "pagina_5" = tagList(
+      selectInput(
+        "tabela_distribuicao",
+        "Tabela de dados",
+        choices = c(
+          "Nacionalidade" = "nationality",
+          "Primeira língua" = "language",
+          "Motivações" = "reasons"
+        )
+      ),
+      selectInput(
+        "ano_distribuicao",
+        "Ano de realização",
+        choices = sort(unique(demo_by_nationality$year))
+      )
+    ),
+    
+    # PÁGINA 6 - COMPARAÇÕES
+    "pagina_6" = tagList(
+      
+      selectInput(
+        "ano_comparacao",
+        "Ano de realização",
+        choices = sort(unique(performance_by_nationality$year))
+      ),
+      
+      selectInput(
+        "tabela_comparacao",
+        "Tabela de comparação",
+        choices = c(
+          "Nacionalidade" = "Nacionalidade",
+          "Primeira língua" = "Primeira língua"
+        )
+      )
+      
+    ),
+    
+    #box plot continente
+    "pagina_7" = tagList(
+      
+      selectInput(
+        "part_continente",
+        "Componente do IELTS",
+        choices = sort(unique(performance_by_nationality$part))
+      ),
+      
+      selectInput(
+        "year_continente",
+        "Ano de realização",
+        choices = sort(unique(performance_by_nationality$year))
+      ),
+      
+      selectInput(
+        "type_continente",
+        "Tipo de candidato",
+        choices = sort(unique(performance_by_nationality$type))
+      )
+      
+    ),
+    
       "pagina_8" = NULL,
       "pagina_9" = NULL,
       "pagina_10" = NULL
@@ -274,6 +331,72 @@ server <- function(input, output, session) {
     )
     
   })
+  
+  ##############
+  # ATUALIZAÇÃO DOS FILTROS DE DESEMPENHO
+  ##############
+  
+  observeEvent(
+    list(input$pagina_atual, input$nationality, input$language),
+    {
+      
+      # GRÁFICO 1 - NACIONALIDADE
+      if (identical(input$pagina_atual, "pagina_1") &&
+          !is.null(input$nationality)) {
+        
+        dado <- performance_by_nationality %>%
+          filter(nationality == input$nationality)
+        
+        # GRÁFICO 2 - PRIMEIRA LÍNGUA
+      } else if (identical(input$pagina_atual, "pagina_2") &&
+                 !is.null(input$language)) {
+        
+        dado <- performance_by_first_language %>%
+          filter(language == input$language)
+        
+      } else {
+        return()
+      }
+      
+      # Evita atualizar os filtros se não houver dados
+      if (nrow(dado) == 0) return()
+      
+      # Opções disponíveis para o país ou idioma selecionado
+      anos <- sort(unique(as.character(dado$year)))
+      tipos <- sort(unique(as.character(dado$type)))
+      
+      # Preserva a seleção atual, se ainda for válida
+      ano_atual <- isolate(input$year)
+      tipo_atual <- isolate(input$type)
+      
+      if (is.null(ano_atual) || !(ano_atual %in% anos)) {
+        ano_atual <- anos[1]
+      }
+      
+      if (is.null(tipo_atual) || !(tipo_atual %in% tipos)) {
+        tipo_atual <- tipos[1]
+      }
+      
+      # Atualiza o filtro de ano
+      updateSelectInput(
+        session,
+        "year",
+        choices = anos,
+        selected = ano_atual
+      )
+      
+      # Atualiza o filtro de tipo
+      updateSelectInput(
+        session,
+        "type",
+        choices = tipos,
+        selected = tipo_atual
+      )
+      
+    },
+    ignoreInit = FALSE
+  )
+  
   
   output$filtros_tabela <- renderUI({
     
@@ -337,45 +460,49 @@ server <- function(input, output, session) {
   })
   
   #funçãp para filtrar dados da tabela
-  dados_tabela_filtrados <- reactive({
     
-    req(input$tabela_selecionada)
+    dados_tabela_filtrados <- reactive({
+      
+      req(input$tabela_selecionada)
+      
+      dado <- switch(
+        input$tabela_selecionada,
+        "demo_by_first_language" = demo_by_first_language,
+        "demo_by_nationality" = demo_by_nationality,
+        "demo_by_reasons" = demo_by_reasons,
+        "performance_by_first_language" = performance_by_first_language,
+        "performance_by_nationality" = performance_by_nationality
+      )
+      
+      # Aplica somente filtros cujas colunas existem na tabela
+      filtros <- list(
+        type = input$filtro_type,
+        language = input$filtro_language,
+        nationality = input$filtro_nationality,
+        reason = input$filtro_reason,
+        continent = input$filtro_continent,
+        year = input$filtro_year
+      )
+      
+      for (coluna in names(filtros)) {
+        
+        valor <- filtros[[coluna]]
+        
+        if (
+          coluna %in% names(dado) &&
+          !is.null(valor) &&
+          valor != ""
+        ) {
+          
+          dado <- dado %>%
+            filter(.data[[coluna]] == valor)
+          
+        }
+      }
+      
+      dado
+    })
     
-    dado <- switch(
-      input$tabela_selecionada,
-      "demo_by_first_language" = demo_by_first_language,
-      "demo_by_nationality" = demo_by_nationality,
-      "demo_by_reasons" = demo_by_reasons,
-      "performance_by_first_language" = performance_by_first_language,
-      "performance_by_nationality" = performance_by_nationality
-    )
-    
-    if (!is.null(input$filtro_type) && input$filtro_type != "") {
-      dado <- dado %>% filter(type == input$filtro_type)
-    }
-    
-    if (!is.null(input$filtro_language) && input$filtro_language != "") {
-      dado <- dado %>% filter(language == input$filtro_language)
-    }
-    
-    if (!is.null(input$filtro_nationality) && input$filtro_nationality != "") {
-      dado <- dado %>% filter(nationality == input$filtro_nationality)
-    }
-    
-    if (!is.null(input$filtro_reason) && input$filtro_reason != "") {
-      dado <- dado %>% filter(reason == input$filtro_reason)
-    }
-    
-    if (!is.null(input$filtro_continent) && input$filtro_continent != "") {
-      dado <- dado %>% filter(continent == input$filtro_continent)
-    }
-    
-    if (!is.null(input$filtro_year) && input$filtro_year != "") {
-      dado <- dado %>% filter(year == input$filtro_year)
-    }
-    
-    dado
-  })
   
   #
   output$tabela_dados <- DT::renderDT({
@@ -548,7 +675,40 @@ server <- function(input, output, session) {
             ano = input$year
           )
           
-        } else {
+          } else if (pagina == 5) {
+           req(input$tabela_distribuicao, input$ano_distribuicao)
+           
+           grafico_5(
+             ano = input$ano_distribuicao,
+             tabela = input$tabela_distribuicao
+           )
+           
+           } else if (pagina == 6) {
+           
+           req(
+             input$ano_comparacao,
+             input$tabela_comparacao
+           )
+           
+           grafico_6(
+             ano = input$ano_comparacao,
+             tabela = input$tabela_comparacao
+           ) 
+           
+        } else if (pagina == 7) {
+          
+          req(
+            input$part_continente,
+            input$year_continente,
+            input$type_continente
+          )
+          
+          grafico_7(
+            parte = input$part_continente,
+            ano = input$year_continente,
+            tipo = input$type_continente
+          )
+          } else {
           
           plot.new()
           

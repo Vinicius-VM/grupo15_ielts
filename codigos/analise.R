@@ -171,4 +171,9 @@ names(demo_by_first_language)
 names(demo_by_nationality)
 names(demo_by_reasons)
 names(performance_by_first_language)
-names(performance_by_nationality)
+
+demo_by_nationality %>%
+  filter(year == "2024-2025", type == "Academic") %>%
+  select(nationality, band, percent) %>%
+  arrange(nationality, band) %>%
+  head(15)
